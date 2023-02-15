@@ -1,15 +1,5 @@
 import axios from 'axios';
-import { Report } from 'notiflix/build/notiflix-report-aio';
-Report.init({
-  backgroundColor: 'pink',
-  info: {
-    buttonColor: 'black',
-    buttonBackground: 'white',
-    svgColor: 'white',
-    titleColor: 'white',
-    messageColor: 'black',
-  },
-});
+
 export class TheImgByAPI {
   static BASE_URL = 'https://pixabay.com/api';
   static API_KEY = '32830040-7bce44f963d1f6b8a44f1755d';
@@ -21,25 +11,21 @@ export class TheImgByAPI {
     this.per_page = 12;
   }
 
-  async fetchImgByQuery(query) {
+  async fetchImgByQuery(query, page = 1) {
     try {
-      const response = await axios.get('/', {
+      const { data } = await axios.get('/', {
         params: {
           key: TheImgByAPI.API_KEY,
           q: query,
-          page: this.page,
+          page: page,
           per_page: this.per_page,
           orientation: 'horizontal',
           image_type: 'photo',
         },
       });
 
-      return response.data;
+      return data;
     } catch (err) {
-      if (err.response.status === 400) {
-        Report.info('No more images');
-        return;
-      }
       console.log(err);
     }
   }

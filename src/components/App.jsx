@@ -4,70 +4,62 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
 import { Button } from './Button/Button';
 import { TheImgByAPI } from '../services/api';
-import { Report } from 'notiflix/build/notiflix-report-aio';
-Report.init({
-  backgroundColor: 'pink',
-  info: {
-    buttonColor: 'black',
-    buttonBackground: 'white',
-    svgColor: 'white',
-    titleColor: 'white',
-    messageColor: 'black',
-  },
-});
+
 export class App extends Component {
   state = {
     imgs: null,
     isLoading: false,
     error: null,
     query: '',
-    totalHits: null,
+    page: 1,
+    showLoadMore: false,
   };
   theImgByAPI = new TheImgByAPI();
 
   formSubmit = query => {
-    this.setState({ isLoading: true });
-    this.fetchImg(query);
+    this.setState({
+      query,
+      imgs: [],
+      isloading: false,
+      error: null,
+      page: 1,
+      showLoadMore: false,
+    });
   };
 
-  fetchImg = async query => {
-    this.setState({ isLoading: true });
-    try {
-      await this.theImgByAPI.fetchImgByQuery(query).then(response => {
-        this.setState({
-          imgs: response.hits,
-          isLoading: false,
+  async componentDidUpdate(_, prevState) {
+    const { query, page } = this.state;
+    if (prevState.query !== query || prevState.page !== page) {
+      this.setState({ isLoading: true });
+      try {
+        const { hits, totalHits } = await this.theImgByAPI.fetchImgByQuery(
           query,
-          totalHits: response.totalHits,
-        });
-      });
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
+          page
+        );
+        this.setState(prevState => ({
+          imgs: [...prevState.imgs, ...hits],
+          showLoadMore: page < Math.ceil(totalHits / 12),
+        }));
+      } catch (error) {
+      } finally {
+        this.setState({ isLoading: false });
+      }
     }
-  };
+  }
+
   onBtnClick = event => {
-    if (this.theImgByAPI.per_page > this.state.totalHits) {
-      Report.info('No more images', {
-        backOverlayColor: 'pink',
-      });
-      return;
-    }
-    this.theImgByAPI.page += 1;
-    this.theImgByAPI.per_page =
-      this.theImgByAPI.per_page * this.theImgByAPI.page;
-    this.fetchImg(this.state.query);
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
+
   render() {
-    const { imgs } = this.state;
+    const { imgs, isLoading, showLoadMore } = this.state;
 
     return (
       <>
         <Searchbar onFormSubmit={this.formSubmit} />
         <ImageGallery imgs={imgs ?? []} />
-        {this.state.isLoading && <Loader />}
-        {imgs && <Button onClick={this.onBtnClick} />}
+        {isLoading && <Loader />}
+        {showLoadMore && <Button onClick={this.onBtnClick} />}
       </>
     );
   }
