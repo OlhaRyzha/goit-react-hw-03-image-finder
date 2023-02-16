@@ -1,12 +1,15 @@
 import { Overlay, ModalEl } from './Modal.styled';
-export function Modal({ img }) {
-  return (
+import { createPortal } from 'react-dom';
+
+const modalRoot = document.querySelector('#modal-root');
+
+export function Modal({ children }) {
+  return createPortal(
     <>
       <Overlay className="overlay">
-        <ModalEl>
-          <img src={img} alt="" />
-        </ModalEl>
+        <ModalEl>{children}</ModalEl>
       </Overlay>
-    </>
+    </>,
+    modalRoot
   );
 }
