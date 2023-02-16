@@ -17,18 +17,16 @@ export class Modal extends Component {
   };
 
   componentWillUnmount() {
-    window.removeEventListener('click', this.onOverlayClick);
     window.removeEventListener('keydown', this.onImgKeyDown);
   }
   componentDidMount() {
-    window.addEventListener('click', this.onOverlayClick);
     window.addEventListener('keydown', this.onImgKeyDown);
   }
   render() {
     const { children } = this.props;
     return createPortal(
       <>
-        <Overlay className="overlay">
+        <Overlay onClick={this.onOverlayClick} className="overlay">
           <ModalEl>{children}</ModalEl>
         </Overlay>
       </>,

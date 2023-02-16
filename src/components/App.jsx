@@ -57,7 +57,8 @@ export class App extends Component {
     return (
       <>
         <Searchbar onFormSubmit={this.formSubmit} />
-        <ImageGallery imgs={imgs ?? []} />
+        {imgs?.length > 0 && <ImageGallery imgs={imgs} />}
+
         {isLoading && <Loader />}
         {showLoadMore && <Button onClick={this.onBtnClick} />}
       </>
